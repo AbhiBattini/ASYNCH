@@ -202,7 +202,7 @@ with tpu_strategy.scope():
             return output
 
     
-    def GT(input_shape):
+    def ASYNCH(input_shape):
         inputs = Input(shape=input_shape)
         linear_rnn_layer = LinearRNN(units=3)
         inputs = linear_rnn_layer(inputs)
