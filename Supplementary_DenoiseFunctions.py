@@ -90,21 +90,4 @@ with tpu_strategy.scope():
         gate = Activation('sigmoid')(g)
         return multiply([inp_2, gate])
 ​
-​
-    def Denoise(input_shape):
-        inputs = Input(shape=input_shape)
-        inputs = MultiHeadAttention(num_heads=1, key_dim=1)(inputs, inputs, inputs)
-        encoder_pool0, encoder0 = encoder_block(inputs, 16, 5, 7, 5)
-        encoder_pool1, encoder1 = encoder_block(encoder_pool0, 32, 2, 5, 2)
-        encoder_pool2, encoder2 = encoder_block(encoder_pool1, 64, 2, 3, 2)
-        center = DeepConv(encoder_pool2, 64, 3, 2)
-        # Upsampling and establishing the skip connections
-        decoder2 = decoder_block(center, encoder2, 32, 3, 2)
-        res2 = residual_block(decoder2, 32)  # 32
-        decoder1 = decoder_block(res2, encoder1, 32, 5, 2)
-        res1 = residual_block(decoder1, 16)
-        decoder0 = decoder_block(res1, encoder0, 16, 7, 5)
-        # Output
-        output0 = Conv1D(1, 1, kernel_initializer=keras.initializers.HeNormal())(decoder0)
-        model = Model(inputs=[inputs], outputs=[output0])
-        return model
+
