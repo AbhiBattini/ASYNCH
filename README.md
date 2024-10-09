@@ -1,5 +1,5 @@
 # ASYNCH
-The architecture for the ASYNCH Lead Synthesis AI Model
+The architecture for the ASYNCH Lead Synthesis AI Model, which synthesizes the 12 leads of an ECG from Leads I, II, and V1
 
 Highlights the way that the:
 * Linear Recurrent Neural Networks were designed
