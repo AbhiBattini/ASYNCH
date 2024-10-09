@@ -130,31 +130,6 @@ with tpu_strategy.scope():
         g = Conv1D(1, 1, padding='same', kernel_initializer=keras.initializers.LecunUniform())(f)
         gate = Activation('sigmoid')(g)
         return multiply([inp_2, gate])
-
-    def Generator(input_shape):
-        inputs = Input(shape=input_shape)
-        linear_rnn_layer = LinearRNN(units=2)
-        inputs = linear_rnn_layer(inputs)
-        # Encoder blocks
-        encoder_pool0, encoder0 = encoder_block(inputs, 96, 5, 3, 5)
-        encoder_pool1, encoder1 = encoder_block(encoder_pool0, 144, 4, 3, 2)
-
-        # Deep convolutional layer
-        center = DeepConv(encoder_pool1, 144, 3, 2)
-        # Apply MultiHeadAttention
-        center_mha = MultiHeadAttention(num_heads=4, key_dim=144)(center, center, center)
-
-        # Decoder blocks with skip connections
-        decoder1 = decoder_block(center_mha, encoder1, 144, 3, 4)
-        attn1 = attention_gate(encoder1, decoder1, 144)
-        res1 = residual_block(attn1, 144)
-        decoder0 = decoder_block(res1, encoder0, 96, 3, 5)
-        # Apply MultiHeadAttention
-        decoder_mha = MultiHeadAttention(num_heads=4, key_dim=96)(decoder0, decoder0, decoder0)
-
-        x = Conv1D(2, 1, kernel_initializer=keras.initializers.HeNormal())(decoder_mha)
-        model = Model(inputs=[inputs], outputs=[x])
-        return model
     
     class PositionalEmbedding(Layer):
         def __init__(self, sequence_length, embedding_dim, **kwargs):
@@ -200,46 +175,3 @@ with tpu_strategy.scope():
             output = self.dense2(x)
 
             return output
-
-    
-    def ASYNCH(input_shape):
-        inputs = Input(shape=input_shape)
-        linear_rnn_layer = LinearRNN(units=3)
-        inputs = linear_rnn_layer(inputs)
-        # Encoder blocks
-        encoder_pool0, encoder0 = encoder_block(inputs, 96, 5, 3, 5)
-        encoder_pool1, encoder1 = encoder_block(encoder_pool0, 144, 4, 3, 2)
-
-        # Deep convolutional layer
-        center = DeepConv(encoder_pool1, 144, 3, 2)
-        # Apply MultiHeadAttention
-        center_mha = MultiHeadAttention(num_heads=4, key_dim=144)(center, center, center)
-
-        # Decoder blocks with skip connections
-        decoder1 = decoder_block(center_mha, encoder1, 144, 3, 4)
-        attn1 = attention_gate(encoder1, decoder1, 144)
-        res1 = residual_block(attn1, 144)
-        decoder0 = decoder_block(res1, encoder0, 96, 3, 5)
-        # Apply MultiHeadAttention
-        decoder_mha = MultiHeadAttention(num_heads=4, key_dim=96)(decoder0, decoder0, decoder0)
-        x = TransformerEncoder(num_heads=4, intermediate_dim=96,
-                               kernel_initializer=keras.initializers.HeUniform(), normalize_first=True)(decoder_mha)
-        x = LayerNormalization()(x)
-        x = TransformerDecoder(num_heads=4, intermediate_dim=96,
-                               kernel_initializer=keras.initializers.HeUniform(), normalize_first=True)(x)
-        x = LayerNormalization()(x)
-        x = TransformerEncoder(num_heads=4, intermediate_dim=96,
-                               kernel_initializer=keras.initializers.HeUniform(), normalize_first=True)(x)
-        x = LayerNormalization()(x)
-        x = TransformerDecoder(num_heads=4, intermediate_dim=96,
-                               kernel_initializer=keras.initializers.HeUniform(), normalize_first=True)(x)
-        x = LayerNormalization()(x)
-        x = TransformerEncoder(num_heads=4, intermediate_dim=96,
-                               kernel_initializer=keras.initializers.HeUniform(), normalize_first=True)(x)
-        x = LayerNormalization()(x)
-        x = TransformerDecoder(num_heads=4, intermediate_dim=96,
-                               kernel_initializer=keras.initializers.HeUniform(), normalize_first=True)(x)
-        x = FeedForwardNetworkLayer(d_model=96, d_ff=2048, output_dim=7)(x)
-        model = Model(inputs=[inputs], outputs=[x])
-        return model
-    
